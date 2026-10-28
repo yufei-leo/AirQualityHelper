@@ -33,10 +33,14 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.RadioButton
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.graphics.Color
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -153,6 +157,7 @@ fun UtilityScreen(
                 val aqi = current?.usAqi
 
                 val category = when {
+
                     aqi == null || !aqi.isFinite() || aqi < 0 ->
                         "Unavailable"
                     aqi <= 50 -> "Good"
@@ -162,16 +167,70 @@ fun UtilityScreen(
                     aqi <= 300 -> "Very unhealthy"
                     else -> "Hazardous"
                 }
+                val aqiBackground = when {
+                    aqi == null || !aqi.isFinite() || aqi < 0 ->
+                        Color(0xFFE0E0E0)
+                    aqi <= 50 -> Color(0xFFC8E6C9)
+                    aqi <= 100 -> Color(0xFFFFF9C4)
+                    aqi <= 150 -> Color(0xFFFFE0B2)
+                    aqi <= 200 -> Color(0xFFFFCDD2)
+                    aqi <= 300 -> Color(0xFFE1BEE7)
+                    else -> Color(0xFF800000)
+                }
 
-                Text(
-                    text = "US AQI: ${aqi ?: "N/A"}",
-                    style = MaterialTheme.typography.displaySmall
-                )
+                val aqiTextColor =
+                    if (aqi != null && aqi.isFinite() && aqi > 300) {
+                        Color.White
+                    } else {
+                        Color(0xFF212121)
+                    }
 
-                Text(
-                    text = category,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = aqiBackground,
+                        contentColor = aqiTextColor
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "US Air Quality Index",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = aqiBackground,
+                                contentColor = aqiTextColor
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "US Air Quality Index",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Text(
+                                    text = aqi?.takeIf { it.isFinite() && it >= 0 }
+                                        ?.toString() ?: "N/A",
+                                    style = MaterialTheme.typography.displayLarge
+                                )
+
+                                Text(
+                                    text = category,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                        }
+                    }
+                }
 
                 if (uiState.showDetails) {
                     Text(
