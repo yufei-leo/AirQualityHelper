@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.jcu.assessment.utilityapp.ui.theme.MobileTech_UtilityAppTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.RadioButton
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +56,7 @@ fun UtilityAppPreview() {
 fun UtilityApp() {
     var selectedTab by remember { mutableStateOf("Utility") }
     var showDetails by remember { mutableStateOf(true) }
+    var selectedCity by remember { mutableStateOf("Singapore") }
 
     Scaffold(
         bottomBar = {
@@ -76,10 +78,16 @@ fun UtilityApp() {
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                "Utility" -> UtilityScreen(showDetails = showDetails)
+                "Utility" -> UtilityScreen(
+                    showDetails = showDetails,
+                    city = selectedCity
+                )
+
                 "Settings" -> SettingsScreen(
                     showDetails = showDetails,
-                    onShowDetailsChange = { showDetails = it }
+                    onShowDetailsChange = { showDetails = it },
+                    selectedCity = selectedCity,
+                    onCityChange = { selectedCity = it }
                 )
             }
         }
@@ -87,9 +95,11 @@ fun UtilityApp() {
 }
 
 @Composable
-fun UtilityScreen(showDetails: Boolean) {
+fun UtilityScreen(
+    showDetails: Boolean,
+    city: String
+) {
     // Sample data for the first UI prototype.
-    val city = "Singapore"
     val aqi = 42
     val pm25 = 8.5
     val pm10 = 16.0
@@ -142,18 +152,43 @@ fun UtilityScreen(showDetails: Boolean) {
 @Composable
 fun SettingsScreen(
     showDetails: Boolean,
-    onShowDetailsChange: (Boolean) -> Unit
+    onShowDetailsChange: (Boolean) -> Unit,
+    selectedCity: String,
+    onCityChange: (String) -> Unit
 ) {
+    val cities = listOf("Singapore", "Sydney", "Melbourne")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "Settings",
             style = MaterialTheme.typography.headlineMedium
         )
+
+        Text(
+            text = "City",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        cities.forEach { city ->
+            androidx.compose.material3.TextButton(
+                onClick = { onCityChange(city) }
+            ) {
+                RadioButton(
+                    selected = selectedCity == city,
+                    onClick = null
+                )
+
+                Text(
+                    text = city,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
 
         Text(
             text = "Show pollutant details",
