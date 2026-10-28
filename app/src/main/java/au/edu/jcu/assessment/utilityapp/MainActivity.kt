@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.jcu.assessment.utilityapp.ui.theme.MobileTech_UtilityAppTheme
+import androidx.compose.material3.Switch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +54,7 @@ fun UtilityAppPreview() {
 @Composable
 fun UtilityApp() {
     var selectedTab by remember { mutableStateOf("Utility") }
+    var showDetails by remember { mutableStateOf(true) }
 
     Scaffold(
         bottomBar = {
@@ -74,15 +76,18 @@ fun UtilityApp() {
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                "Utility" -> UtilityScreen()
-                "Settings" -> SettingsScreen()
+                "Utility" -> UtilityScreen(showDetails = showDetails)
+                "Settings" -> SettingsScreen(
+                    showDetails = showDetails,
+                    onShowDetailsChange = { showDetails = it }
+                )
             }
         }
     }
 }
 
 @Composable
-fun UtilityScreen() {
+fun UtilityScreen(showDetails: Boolean) {
     // Sample data for the first UI prototype.
     val city = "Singapore"
     val aqi = 42
@@ -115,15 +120,17 @@ fun UtilityScreen() {
             style = MaterialTheme.typography.titleMedium
         )
 
-        Text(
-            text = "PM2.5: $pm25 µg/m³",
-            style = MaterialTheme.typography.bodyLarge
-        )
+        if (showDetails) {
+            Text(
+                text = "PM2.5: $pm25 µg/m³",
+                style = MaterialTheme.typography.bodyLarge
+            )
 
-        Text(
-            text = "PM10: $pm10 µg/m³",
-            style = MaterialTheme.typography.bodyLarge
-        )
+            Text(
+                text = "PM10: $pm10 µg/m³",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
 
         Text(
             text = "Sample data only — not live readings",
@@ -133,13 +140,34 @@ fun UtilityScreen() {
 }
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    showDetails: Boolean,
+    onShowDetailsChange: (Boolean) -> Unit
+) {
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp), Arrangement.spacedBy(16.dp)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Settings Screen", style = MaterialTheme.typography.headlineMedium)
-        Text("This is where you can add toggles or preferences.")
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Text(
+            text = "Show pollutant details",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Text(
+            text = "Display PM2.5 and PM10 on the home screen.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Switch(
+            checked = showDetails,
+            onCheckedChange = onShowDetailsChange
+        )
     }
 }
