@@ -83,7 +83,11 @@ fun UtilityApp() {
 
 @Composable
 fun UtilityScreen() {
-    var counter by remember { mutableIntStateOf(0) }
+    // Sample data for the first UI prototype.
+    val city = "Singapore"
+    val aqi = 42
+    val pm25 = 8.5
+    val pm10 = 16.0
 
     Column(
         modifier = Modifier
@@ -91,12 +95,40 @@ fun UtilityScreen() {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Utility Screen", style = MaterialTheme.typography.headlineMedium)
-        Text("Counter: $counter", style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = "Air Quality Helper",
+            style = MaterialTheme.typography.headlineMedium
+        )
 
-        Button(onClick = { counter++ }) {
-            Text("Increment")
-        }
+        Text(
+            text = city,
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text(
+            text = "US AQI: $aqi",
+            style = MaterialTheme.typography.displaySmall
+        )
+
+        Text(
+            text = "Good",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Text(
+            text = "PM2.5: $pm25 µg/m³",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Text(
+            text = "PM10: $pm10 µg/m³",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Text(
+            text = "Sample data only — not live readings",
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 
