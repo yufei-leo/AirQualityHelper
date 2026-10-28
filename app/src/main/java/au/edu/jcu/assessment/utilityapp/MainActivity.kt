@@ -8,39 +8,38 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import au.edu.jcu.assessment.utilityapp.ui.theme.MobileTech_UtilityAppTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.RadioButton
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.ui.graphics.Color
-
+import au.edu.jcu.assessment.utilityapp.ui.theme.MobileTech_UtilityAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,7 +63,7 @@ fun UtilityAppPreview() {
 
 @Composable
 fun UtilityApp() {
-    var selectedTab by remember { mutableStateOf("Utility") }
+    var selectedTab by rememberSaveable { mutableStateOf("Utility") }
     val factory = remember {
         AirQualityViewModel.Factory(
             AirQualityRepository(AirQualityApiClient.api)
@@ -164,6 +163,7 @@ fun UtilityScreen(
 
                     aqi == null || !aqi.isFinite() || aqi < 0 ->
                         "Unavailable"
+
                     aqi <= 50 -> "Good"
                     aqi <= 100 -> "Moderate"
                     aqi <= 150 -> "Unhealthy for sensitive groups"
@@ -174,6 +174,7 @@ fun UtilityScreen(
                 val aqiBackground = when {
                     aqi == null || !aqi.isFinite() || aqi < 0 ->
                         Color(0xFFE0E0E0)
+
                     aqi <= 50 -> Color(0xFFC8E6C9)
                     aqi <= 100 -> Color(0xFFFFF9C4)
                     aqi <= 150 -> Color(0xFFFFE0B2)
