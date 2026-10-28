@@ -121,4 +121,6 @@ The template was extended with air quality retrieval, application state manageme
 
 ## Generative AI Assistance
 
-Use OpenAI's Codex to assist in planning, explanation, debugging guidance, and assisting in the writing of README. The generated suggestions have been integrated into the project and have been manually tested during the development process.
+OpenAI ChatGPT/Codex assisted me throughout the development process by helping me plan features, understand implementation approaches, work through code examples, troubleshoot issues and organise documentation. I applied the changes in Android Studio and manually tested the app.
+
+This acknowledgement does not replace the separate Declaration of AI-Generated Material required for the assignment.
