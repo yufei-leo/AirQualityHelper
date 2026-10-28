@@ -31,6 +31,12 @@ import androidx.compose.ui.unit.dp
 import au.edu.jcu.assessment.utilityapp.ui.theme.MobileTech_UtilityAppTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +61,17 @@ fun UtilityAppPreview() {
 @Composable
 fun UtilityApp() {
     var selectedTab by remember { mutableStateOf("Utility") }
-    var showDetails by remember { mutableStateOf(true) }
-    var selectedCity by remember { mutableStateOf("Singapore") }
+    val factory = remember {
+        AirQualityViewModel.Factory(
+            AirQualityRepository(AirQualityApiClient.api)
+        )
+    }
+
+    val airQualityViewModel: AirQualityViewModel = viewModel(
+        factory = factory
+    )
+
+    val uiState by airQualityViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         bottomBar = {
@@ -79,15 +94,19 @@ fun UtilityApp() {
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
                 "Utility" -> UtilityScreen(
-                    showDetails = showDetails,
-                    city = selectedCity
+                    uiState = uiState,
+                    onRefresh = { airQualityViewModel.refresh() }
                 )
 
                 "Settings" -> SettingsScreen(
-                    showDetails = showDetails,
-                    onShowDetailsChange = { showDetails = it },
-                    selectedCity = selectedCity,
-                    onCityChange = { selectedCity = it }
+                    showDetails = uiState.showDetails,
+                    onShowDetailsChange = {
+                        airQualityViewModel.setShowDetails(it)
+                    },
+                    selectedCity = uiState.selectedCity,
+                    onCityChange = {
+                        airQualityViewModel.selectCity(it)
+                    }
                 )
             }
         }
@@ -96,17 +115,13 @@ fun UtilityApp() {
 
 @Composable
 fun UtilityScreen(
-    showDetails: Boolean,
-    city: String
+    uiState: AirQualityUiState,
+    onRefresh: () -> Unit
 ) {
-    // Sample data for the first UI prototype.
-    val aqi = 42
-    val pm25 = 8.5
-    val pm10 = 16.0
-
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -116,34 +131,88 @@ fun UtilityScreen(
         )
 
         Text(
-            text = city,
+            text = uiState.selectedCity,
             style = MaterialTheme.typography.titleLarge
         )
 
-        Text(
-            text = "US AQI: $aqi",
-            style = MaterialTheme.typography.displaySmall
-        )
+        when {
+            uiState.isLoading -> {
+                CircularProgressIndicator()
+                Text("Loading air quality...")
+            }
 
-        Text(
-            text = "Good",
-            style = MaterialTheme.typography.titleMedium
-        )
+            uiState.errorMessage != null -> {
+                Text(
+                    text = uiState.errorMessage,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
 
-        if (showDetails) {
-            Text(
-                text = "PM2.5: $pm25 µg/m³",
-                style = MaterialTheme.typography.bodyLarge
-            )
+            else -> {
+                val current = uiState.response?.current
+                val aqi = current?.usAqi
 
-            Text(
-                text = "PM10: $pm10 µg/m³",
-                style = MaterialTheme.typography.bodyLarge
-            )
+                val category = when {
+                    aqi == null || !aqi.isFinite() || aqi < 0 ->
+                        "Unavailable"
+                    aqi <= 50 -> "Good"
+                    aqi <= 100 -> "Moderate"
+                    aqi <= 150 -> "Unhealthy for sensitive groups"
+                    aqi <= 200 -> "Unhealthy"
+                    aqi <= 300 -> "Very unhealthy"
+                    else -> "Hazardous"
+                }
+
+                Text(
+                    text = "US AQI: ${aqi ?: "N/A"}",
+                    style = MaterialTheme.typography.displaySmall
+                )
+
+                Text(
+                    text = category,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                if (uiState.showDetails) {
+                    Text(
+                        text = "PM2.5: ${
+                            current?.pm25?.let { "$it µg/m³" } ?: "N/A"
+                        }",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Text(
+                        text = "PM10: ${
+                            current?.pm10?.let { "$it µg/m³" } ?: "N/A"
+                        }",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                Text(
+                    text = "Data time: ${
+                        current?.time?.replace("T", " ") ?: "N/A"
+                    }",
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Text(
+                    text = "Time zone: ${uiState.response?.timezone ?: "N/A"}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+
+        Button(
+            onClick = onRefresh,
+            enabled = !uiState.isLoading
+        ) {
+            Text("Refresh")
         }
 
         Text(
-            text = "Sample data only — not live readings",
+            text = "Source: Open-Meteo / CAMS\n" +
+                    "Model estimates, not station measurements.",
             style = MaterialTheme.typography.bodySmall
         )
     }
