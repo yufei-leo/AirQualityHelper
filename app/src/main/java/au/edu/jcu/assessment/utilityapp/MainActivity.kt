@@ -110,6 +110,10 @@ fun UtilityApp() {
                     selectedCity = uiState.selectedCity,
                     onCityChange = {
                         airQualityViewModel.selectCity(it)
+                    },
+                    alertThreshold = uiState.alertThreshold,
+                    onAlertThresholdChange = {
+                        airQualityViewModel.setAlertThreshold(it)
                     }
                 )
             }
@@ -214,6 +218,19 @@ fun UtilityScreen(
                     }
                 }
 
+                if (
+                    aqi != null &&
+                    aqi.isFinite() &&
+                    aqi > uiState.alertThreshold
+                ) {
+                    Text(
+                        text = "Above your alert threshold of " +
+                                "${uiState.alertThreshold} US AQI.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+
                 if (uiState.showDetails) {
                     Text(
                         text = "PM2.5: ${
@@ -264,13 +281,17 @@ fun SettingsScreen(
     showDetails: Boolean,
     onShowDetailsChange: (Boolean) -> Unit,
     selectedCity: String,
-    onCityChange: (String) -> Unit
+    onCityChange: (String) -> Unit,
+    alertThreshold: Int,
+    onAlertThresholdChange: (Int) -> Unit
 ) {
     val cities = listOf("Singapore", "Sydney", "Melbourne")
+    val thresholds = listOf(50, 100, 150, 200)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -292,7 +313,6 @@ fun SettingsScreen(
                     selected = selectedCity == city,
                     onClick = null
                 )
-
                 Text(
                     text = city,
                     modifier = Modifier.padding(start = 8.dp)
@@ -305,14 +325,34 @@ fun SettingsScreen(
             style = MaterialTheme.typography.titleMedium
         )
 
-        Text(
-            text = "Display PM2.5 and PM10 on the home screen.",
-            style = MaterialTheme.typography.bodyMedium
-        )
-
         Switch(
             checked = showDetails,
             onCheckedChange = onShowDetailsChange
         )
+
+        Text(
+            text = "AQI alert threshold",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Text(
+            text = "Show an on-screen alert when US AQI exceeds this value.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        thresholds.forEach { threshold ->
+            androidx.compose.material3.TextButton(
+                onClick = { onAlertThresholdChange(threshold) }
+            ) {
+                RadioButton(
+                    selected = alertThreshold == threshold,
+                    onClick = null
+                )
+                Text(
+                    text = threshold.toString(),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
     }
 }

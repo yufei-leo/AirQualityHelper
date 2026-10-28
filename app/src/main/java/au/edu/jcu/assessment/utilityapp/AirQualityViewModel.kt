@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 data class AirQualityUiState(
     val selectedCity: String = "Singapore",
     val showDetails: Boolean = true,
+    val alertThreshold: Int = 100,
     val isLoading: Boolean = false,
     val response: AirQualityResponse? = null,
     val errorMessage: String? = null
@@ -40,6 +41,10 @@ class AirQualityViewModel(
 
     fun setShowDetails(show: Boolean) {
         _uiState.update { it.copy(showDetails = show) }
+    }
+
+    fun setAlertThreshold(threshold: Int) {
+        _uiState.update { it.copy(alertThreshold = threshold) }
     }
 
     fun refresh() {
