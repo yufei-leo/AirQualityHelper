@@ -201,34 +201,16 @@ fun UtilityScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = aqiBackground,
-                                contentColor = aqiTextColor
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(20.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "US Air Quality Index",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
+                        Text(
+                            text = aqi?.takeIf { it.isFinite() && it >= 0 }
+                                ?.toString() ?: "N/A",
+                            style = MaterialTheme.typography.displayLarge
+                        )
 
-                                Text(
-                                    text = aqi?.takeIf { it.isFinite() && it >= 0 }
-                                        ?.toString() ?: "N/A",
-                                    style = MaterialTheme.typography.displayLarge
-                                )
-
-                                Text(
-                                    text = category,
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                            }
-                        }
+                        Text(
+                            text = category,
+                            style = MaterialTheme.typography.titleLarge
+                        )
                     }
                 }
 
